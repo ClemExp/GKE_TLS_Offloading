@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami
+  namespace: tlson
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`whoamitls.clemoregan.com`) && (PathPrefix(`/`))
+      services:
+        - name: whoami
+          port: 80
+  tls: # This route uses TLS
+    secretName: traefik-tls-cert

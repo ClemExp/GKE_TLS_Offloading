@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-healtcheck
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/healthcheck`)
+      kind: Rule
+      services:
+        - name: ping@internal
+          kind: TraefikService

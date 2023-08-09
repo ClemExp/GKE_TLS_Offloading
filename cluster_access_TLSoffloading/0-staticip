@@ -1,0 +1,3 @@
+#!/bin/bash
+gcloud compute addresses create traefike2e --project=tls-terraform --global
+

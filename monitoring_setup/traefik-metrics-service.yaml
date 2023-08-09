@@ -1,0 +1,19 @@
+# Traefik exposes /metrics on port 9100 and need to let other containers access it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-metrics
+  namespace: tlsoff
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/name: traefik-metrics
+spec:
+  type: ClusterIP
+  ports:
+  - name: traefik
+    port: 9100
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/name: traefik

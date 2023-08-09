@@ -1,0 +1,72 @@
+# https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+traefik:
+  globalArguments:
+    - "--global.checknewversion"
+    - "--global.sendAnonymousUsage=false"
+
+  service:
+    type: NodePort
+    spec:
+
+  # Ensuring traefik is the default ingress controller
+  ingressClass:
+    enabled: true
+    isDefaultClass: false
+
+  ports:
+    web:
+      port: 8000
+      expose: true
+      exposedPort: 80
+      protocol: TCP
+      nodePort: 32080
+
+  # Add the following to enable the traefik to prometheus sending of metrics within the cluster
+  metrics:
+    prometheus:
+      enabled: true
+      serviceMonitor:
+      service:
+        enabled: true
+
+
+  # Enable persistence using Persistent Volume Claims
+  # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  persistence:
+    storageClass: "backedup"
+    enabled: false
+    name: data
+    accessMode: ReadWriteOnce
+    size: 128Mi
+    path: /data
+    annotations: {}
+
+  podSecurityContext:
+    fsGroup: 1003
+    # Make sure that the group of the directory where the PersistentVolume is mounted is actually 1003
+
+  providers:
+    kubernetesCRD:
+      enabled: true
+
+  additionalArguments:
+    - "--providers.file.filename=/config/dynamic.yaml"
+    - "--providers.file.watch=true"
+    - "--providers.kubernetesingress.ingressclass=traefik"
+    - "--ping"
+    - "--metrics.prometheus=true"
+    - "--metrics.prometheus.entryPoint=metrics"
+    - "--entryPoints.metrics.address=:9100"
+
+domain: traefik.clemoregan.com
+services:
+  - name: sample_app
+    subdomain: sample_app1
+    host: 10.0.0.1
+    path: /app1/
+    target_port: 8500
+  - name: sample_app
+    subdomain: sample_app2
+    host: 10.0.0.2
+    path: /app2/
+    target_port: 9500

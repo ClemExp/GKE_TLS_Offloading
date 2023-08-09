@@ -1,0 +1,17 @@
+# Terraform temp files
+*.tfstate
+*.backup
+*.hcl
+**/.terraform/
+*.info
+
+# ignore these tmp local directories
+k8s/
+helm/tmp/
+*DS_Store
+
+# ignore any specific credentials or cert files
+terraform_TLStermination/*.json
+*.cer
+*.key
+*.pem

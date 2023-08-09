@@ -1,0 +1,43 @@
+ingressClass:
+  enabled: true
+  isDefaultClass: false
+
+additionalArguments:
+  - "--providers.kubernetesingress.ingressclass=traefik"
+  - "--ping"
+  - "--metrics.prometheus=true"
+  - "--metrics.prometheus.entryPoint=metrics"
+  - "--entryPoints.metrics.address=:9100"
+
+providers:
+  kubernetesCRD:
+    enabled: true
+
+ports:
+  web:
+    port: 8000
+    expose: true
+    exposedPort: 80
+    protocol: TCP
+    nodePort: 32080
+  websecure:
+    port: 8443
+    expose: true
+    exposedPort: 443
+    protocol: TCP
+    nodePort: 32443
+
+# Add the following to enable the traefik to prometheus sending of metrics within the cluster
+metrics:
+  prometheus:
+    enabled: true
+    serviceMonitor:
+    service:
+      enabled: true
+
+service:
+  enabled: true
+  type: NodePort
+#  annotations:
+#    prometheus.io/scrape: true
+#    prometheus.io/port: 8000

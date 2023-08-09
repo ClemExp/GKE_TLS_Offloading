@@ -1,0 +1,11 @@
+apiVersion: v2
+name: gateway
+description: Installs Traefik as a Ingress controller and reverse proxy
+type: application
+version: 0.2.0
+appVersion: "10.23.0"
+
+dependencies:
+  - name: traefik 
+    version: 10.23.0
+    repository: "https://helm.traefik.io/traefik"
