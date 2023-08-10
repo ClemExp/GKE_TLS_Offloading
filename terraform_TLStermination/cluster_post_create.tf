@@ -26,9 +26,3 @@ resource "null_resource" "establish_cluster" {
     EOT
   }
 }
-
-# create static address which will be later used by the load balancer config
-resource "google_compute_global_address" "default" {
-  name           = "traefik-lb-static-ip"
-  address_type   = "EXTERNAL"
-}

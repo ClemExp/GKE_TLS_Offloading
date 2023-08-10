@@ -50,12 +50,20 @@ Our application is deployed via helm via ClusterIP service, only being exposed t
    We are also using the terraform helm provider to deploy our key applications (traefik, cert-manager etc).
    More detail on terraform setup and execution can be found in the terraform sub-folder.
 
-4. **Configure DNS for cluster**
+4. **Post terraform tasks**
 
-   Change to the directory where your Terraform scripts are located..
+   Some tasks are still required after terraform completion for this cluster:
+   - Modify load balancer:
+      - Edit load balancer config to add a new FE with HTTPS termination (choose TF created static IP: traefik-lb-static-ip)
+      - Modify health check config:
+      ```
+      gcloud compute health-checks update http --request-path "/healthcheck" <lb-backend-config> --project tls-terraform
+      ```
+   - Modify DNS records (google domains) with above static IP for load balancer
+   - Will have to wait 20 - 30 minutes for certificate provisioning to complete. Meanwhile can review via:
+   ```
+   watch kubectl describe managedcertificate tls-cert-off -n tlsoff
+   watch kubectl describe ing lb-traefik-ingress -n tlsoff
+   ```
 
-
-5. **Create Namespace for Traefik**
-
-Run the following command to create a namespace named `traefik` in the new cluster:
-
+   Once certificate is active, then can access applications via browser / curl
