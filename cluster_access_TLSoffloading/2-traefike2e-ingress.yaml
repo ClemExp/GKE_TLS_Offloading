@@ -7,7 +7,7 @@ metadata:
     networking.gke.io/managed-certificates: tls-cert-off
     kubernetes.io/ingress.class: gce # Although deprecated by kubernetes spec, GKE still uses this, so must be used
     traefik.ingress.kubernetes.io/frontend-entry-points: "https"
-    kubernetes.io/ingress.global-static-ip-name: "traefik-lb-static-ip"
+    kubernetes.io/ingress.global-static-ip-name: "traefik-lb-static-ip-tmp"
 spec:
 # Note: Keep in mind that TLS will not work on the default rule because certificates 
 # would have to be issued for all the possible sub-domains. Therefore, hosts in the tls section 

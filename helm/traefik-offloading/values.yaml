@@ -20,6 +20,17 @@ traefik:
       exposedPort: 80
       protocol: TCP
       nodePort: 32080
+    websecure:
+      port: 8443
+      expose: true
+      exposedPort: 443
+      protocol: TCP
+      nodePort: 32443
+      tls:
+        enabled: true
+        domains:
+          - main: traefiktst.clemoregan.com
+
 
   # Add the following to enable the traefik to prometheus sending of metrics within the cluster
   metrics:

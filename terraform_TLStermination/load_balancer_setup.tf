@@ -17,59 +17,94 @@ resource "google_compute_global_address" "default" {
 }
 
 # Create managed certificate resource
-resource "google_compute_managed_ssl_certificate" "managed_certificate" {
-  provider = "google-beta"
-  project  = var.project
+# resource "google_compute_managed_ssl_certificate" "managed_certificate" {
+#   #provider = "google-beta"
+#   project  = var.project
 
-  name      = "tls-cert-off"
-  namespace = "tlsoff" 
-
-  managed {
-    domains = [
-      "traefiktst.clemoregan.com",
-      "whoamitst.clemoregan.com"
-    ]
-    #domains = concat(["${var.backend_name}.${var.domain}."], "${var.alternative-cert-names}")
-  }
-  depends_on = [google_container_cluster.primary]
-}
-
-# # Following creates certificate, but not ideal as may not be removed on terraform destroy
-# resource "null_resource" "example_cert" {
-#   provisioner "local-exec" {
-#     command = <<EOT
-# kubectl create -f - -- <<EOF
-# apiVersion: networking.gke.io/v1beta1
-# kind: ManagedCertificate
-# metadata:
-#   name: example-certificate
-# spec:
-#   domains:
-#     - example.com
-# EOF
-# EOT
+#   name      = "tls-cert-off"
+  
+#   managed {
+#     domains = [
+#       "traefiktst.clemoregan.com",
+#       "whoamitst.clemoregan.com"
+#     ]
+#     #domains = concat(["${var.backend_name}.${var.domain}."], "${var.alternative-cert-names}")
 #   }
+#   depends_on = [google_container_cluster.primary]
 # }
 
-resource "kubernetes_ingress" "lb_traefik_ingress" {
-  metadata {
-    name = "lb-traefik-ingress"
-    namespace = "tlsoff"
-
-    annotations {
-      "kubernetes.io/ingress.allow-http"                      = "false"
-      "networking.gke.io/managed-certificates"                = google_compute_managed_ssl_certificate.managed_certificate.name
-      "kubernetes.io/ingress.class"                           = "gce"
-      "traefik.ingress.kubernetes.io/frontend-entry-points"   = "https"
-      "kubernetes.io/ingress.global-static-ip-name"           = var.lb-static-ip
-    }
-  }
-
-  spec {
-    default_backend {
-      service_name = "traefik"
-      service_port = 80
-    }
+# # Following creates certificate, but not ideal as may not be removed on terraform destroy
+resource "null_resource" "managed_certificate" {
+  provisioner "local-exec" {
+    command = <<EOT
+kubectl create -f - -- <<EOF
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: tls-cert-off
+  namespace: tlsoff
+spec:
+  domains:
+    - traefiktst.clemoregan.com
+    - whoamitst.clemoregan.com
+    - tlstst.clemoregan.com
+EOF
+EOT
   }
   depends_on = [null_resource.traefik_deploy]
 }
+
+# following ingress will kick off the automatic creation of the load balancer
+resource "null_resource" "lb-ingress" {
+  provisioner "local-exec" {
+    command = <<EOT
+kubectl create -f - -- <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lb-traefik-ingress
+  namespace: tlsoff
+  annotations:
+    networking.gke.io/managed-certificates: tls-cert-off
+    kubernetes.io/ingress.class: gce # Although deprecated by kubernetes spec, GKE still uses this, so must be used
+    traefik.ingress.kubernetes.io/frontend-entry-points: "https"
+    kubernetes.io/ingress.global-static-ip-name: "traefik-lb-static-ip-tmp"
+spec:
+  defaultBackend:
+    service:
+      name: traefik
+      port:
+        number: 80
+EOF
+EOT
+  }
+  depends_on = [null_resource.managed_certificate]
+}
+
+# resource "kubernetes_ingress" "lb_traefik_ingress" {
+#   metadata {
+#     name          = "lb-traefik-ingress"
+#     namespace     = "tlsoff"
+#     annotations   = {
+#       "networking.gke.io/managed-certificates"                = google_compute_managed_ssl_certificate.managed_certificate.name
+#       "kubernetes.io/ingress.class"                           = "gce"
+#       "traefik.ingress.kubernetes.io/frontend-entry-points"   = "https"
+#       "kubernetes.io/ingress.global-static-ip-name"           = var.lb-static-ip
+#     }
+#   }
+
+#   spec {
+#     rule {
+#       http {
+#         path {
+#           path = "/*"
+#           backend {
+#             service_name = "traefik"
+#             service_port = 80            
+#           }
+#         }
+#       }
+#     }
+#   }
+#   depends_on = [null_resource.traefik_deploy]
+# }
