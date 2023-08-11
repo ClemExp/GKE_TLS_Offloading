@@ -26,7 +26,7 @@ ingress:
     #networking.gke.io/managed-certificates: various
   hosts:
     #- host: w.35.227.195.180.nip.io
-    - host: whoamitst.clemoregan.com
+    - host: whoami.clemoregan.com
       paths:
         - path: /
           pathType: Prefix

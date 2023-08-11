@@ -45,9 +45,9 @@ metadata:
   namespace: tlsoff
 spec:
   domains:
-    - traefiktst.clemoregan.com
-    - whoamitst.clemoregan.com
-    - tlstst.clemoregan.com
+    - traefik.clemoregan.com
+    - whoami.clemoregan.com
+    - tlsoff.clemoregan.com
 EOF
 EOT
   }
