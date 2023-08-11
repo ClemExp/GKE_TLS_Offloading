@@ -35,9 +35,17 @@ Our application is deployed via helm via ClusterIP service, only being exposed t
 
 ## Architecture setup
 
-1. **Create new GCP project**
+1. **Create new GCP project & service accounts**
 
    Recommend to create a new GCP project for hosting the GKE cluster. This can be done via the GCP console, or gcloud utility.
+
+   Service accounts can be created using CLI or console. We will need a service account for terraform & a service account for DNS administrator. For CLI creation:
+
+   ```
+   gcloud iam service-accounts create terraform  --display-name "TerraformAccount"
+   gcloud iam service-accounts keys create ~/.config/gcloud/<PROJECT>.json --iam-account terraform@<PROJECT>.iam.gserviceaccount.co
+   ```
+
 
 2. **Configure infrastructure variables for cluster**
 
@@ -52,18 +60,18 @@ Our application is deployed via helm via ClusterIP service, only being exposed t
 
 4. **Post terraform tasks**
 
-   Some tasks are still required after terraform completion for this cluster:
-   - Modify load balancer:
-      - Edit load balancer config to add a new FE with HTTPS termination (choose TF created static IP: traefik-lb-static-ip)
+   Some minor tasks are still required after terraform completion for this cluster:
+   - Load balancer is created after ingress syncs with google cloud, whihc takes a few minutes after terraform completion. This basically cretes our external load balancer from the ingress. In general you can't modify this load balancer, as google sync job will overwrite it afterwards, but we do need to modify the healthcheck for traefik. 
+   Modify load balancer:
       - Modify health check config:
       ```
       gcloud compute health-checks update http --request-path "/healthcheck" <lb-backend-config> --project tls-terraform
       ```
    - Modify DNS records (google domains) with above static IP for load balancer
-   - Will have to wait 20 - 30 minutes for certificate provisioning to complete. Meanwhile can review via:
+   - Will have to wait 20 - 30 minutes for certificate provisioning to complete. It is not enough for the domains come active, the certificate itself must change to an active status. Meanwhile can check http access & can review HTTPS status via:
    ```
    watch kubectl describe managedcertificate tls-cert-off -n tlsoff
    watch kubectl describe ing lb-traefik-ingress -n tlsoff
    ```
 
-   Once certificate is active, then can access applications via browser / curl
+   Once certificate is active, then can access applications via browser / curl.

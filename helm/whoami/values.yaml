@@ -2,11 +2,6 @@ replicaCount: 1
 
 image:
   repository: traefik/whoami
-  # to pull from harbor - have to first tag & push image, then create cluster secret
-  # <<<<kubectl create secret docker-registry docker-registry-creds --docker-server="registry.harbor.traefik.me" --docker-email=test123@example.com --docker-username=<harbor_user> --docker-password=<harobor_pass>
-  #repository: harbor.traefik.me/library/whoami
-  #imagePullSecrets:
-  #  - name: docker-registry-credsv4
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -24,17 +19,17 @@ service:
 ingress:
   enabled: true
   annotations:
+    #traefik.ingress.kubernetes.io/router.entrypoints: websecure
     kubernetes.io/ingress.class: traefik
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    #traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    #networking.gke.io/managed-certificates: various
   hosts:
-    - host: whoami.traefik.me
+    #- host: w.35.227.195.180.nip.io
+    - host: whoamitst.clemoregan.com
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    source: secret
-    secretName: traefik-tls-cert
 
 autoscaling:
   enabled: false

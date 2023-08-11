@@ -51,7 +51,7 @@ spec:
 EOF
 EOT
   }
-  depends_on = [null_resource.traefik_deploy]
+  depends_on = [null_resource.monitoring_stack]
 }
 
 # following ingress will kick off the automatic creation of the load balancer
