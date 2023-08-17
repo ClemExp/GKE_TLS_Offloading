@@ -1,9 +1,0 @@
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: tls-cert-off
-  namespace: tlsoff
-spec:
-  domains:
-    - traefiktst.clemoregan.com
-    - whoamitst.clemoregan.com

@@ -61,17 +61,28 @@ Our application is deployed via helm via ClusterIP service, only being exposed t
 4. **Post terraform tasks**
 
    Some minor tasks are still required after terraform completion for this cluster:
-   - Load balancer is created after ingress syncs with google cloud, whihc takes a few minutes after terraform completion. This basically cretes our external load balancer from the ingress. In general you can't modify this load balancer, as google sync job will overwrite it afterwards, but we do need to modify the healthcheck for traefik. 
+   - Load balancer is created after ingress syncs with google cloud, whihc takes a few minutes after terraform completion. This creates our external load balancer from the ingress. In general any manual modification to this load balancer will be lost, as google sync job will overwrite it afterwards, but we do need to modify the healthcheck for traefik: 
    Modify load balancer:
       - Modify health check config:
       ```
-      gcloud compute health-checks update http --request-path "/healthcheck" <lb-backend-config> --project tls-terraform
+      gcloud compute backend-services list --project tls-terraform
+      gcloud compute health-checks update http --request-path "/healthcheck" <lb-backend-config -name> --project tls-terraform
       ```
    - Modify DNS records (google domains) with above static IP for load balancer
-   - Will have to wait 20 - 30 minutes for certificate provisioning to complete. It is not enough for the domains come active, the certificate itself must change to an active status. Meanwhile can check http access & can review HTTPS status via:
+   - Will have to wait 20 - 30 minutes for certificate provisioning to complete. It is not enough for the domains to come active, the certificate itself must change to an active status. Meanwhile can check http access & can review HTTPS status via:
    ```
    watch kubectl describe managedcertificate tls-cert-off -n tlsoff
    watch kubectl describe ing lb-traefik-ingress -n tlsoff
    ```
 
    Once certificate is active, then can access applications via browser / curl.
+
+4. **Cluster destroy**
+
+   To destroy cluster and cluster resources we do this via terraform:
+   ```
+   terraform destroy
+   ```
+
+   Cluster and terraform created objects are destroyed properly via above command.
+   As load balancer is created from ingress presence in cluster, ensure the load balancer is removed on terraform destroy eith via CLI or GCP console.
