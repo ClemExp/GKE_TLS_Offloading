@@ -1,14 +1,14 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: grafana-ingress-route
+  name: prometheus-ingress-route
 spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`grafana.clemeoregan.com`)
+    - match: Host(`prom.clemoregan.com`) && (PathPrefix(`/`))
       kind: Rule
       services:
       - kind: Service
-        name: prometheus-stack-grafana
-        port: 80
+        name: prometheus-stack-kube-prom-prometheus
+        port: 9090

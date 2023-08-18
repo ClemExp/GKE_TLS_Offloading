@@ -6,6 +6,10 @@ terraform {
     helm = {
       source = "hashicorp/helm"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = ">= 1.11.0"
+    }
   }
 }
 
@@ -15,6 +19,15 @@ provider "google" {
   project = var.project
   region = var.region
   zone = var.zone
+}
+
+provider "kubectl" {
+    load_config_file       = false
+    host = google_container_cluster.primary.endpoint
+    token = data.google_client_config.current.access_token
+    client_certificate = base64decode(google_container_cluster.primary.master_auth.0.client_certificate)
+    client_key = base64decode(google_container_cluster.primary.master_auth.0.client_key)
+    cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth.0.cluster_ca_certificate)
 }
 
 resource "google_container_cluster" "primary" {
@@ -64,22 +77,6 @@ provider "helm" {
     cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth.0.cluster_ca_certificate)
   }
 }
-
-
-# resource "helm_release" "traefik" {
-#   name = "traefik"
-#   chart = "traefik"
-#   repository = "https://helm.traefik.io/traefik"
-#   namespace = "traefik"
-#   create_namespace = true
-
-#   depends_on = [null_resource.cluster_tls]
-
-#   values = [
-#     "${file("../helm/deployable_apps/traefik_values.yaml")}",
-#   ]
-#   # or can paste full file (replaceing ..): values = [<<EOF ... EOF]
-# }
 
 # resource "helm_release" "cert-manager" {
 #   name = "cert-manager"

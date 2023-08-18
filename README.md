@@ -61,7 +61,8 @@ Our application is deployed via helm via ClusterIP service, only being exposed t
 4. **Post terraform tasks**
 
    Some minor tasks are still required after terraform completion for this cluster:
-   - Load balancer is created after ingress syncs with google cloud, whihc takes a few minutes after terraform completion. This creates our external load balancer from the ingress. In general any manual modification to this load balancer will be lost, as google sync job will overwrite it afterwards, but we do need to modify the healthcheck for traefik: 
+   - Load balancer is created after ingress syncs with google cloud, whihc takes a few minutes after terraform completion. This creates our external load balancer from the ingress which will resolve to traefik as the ingress controller. 
+   Note: In general any manual modification to this load balancer will be lost, as google sync job will overwrite it afterwards, but we do need to modify the healthcheck for traefik: 
    Modify load balancer:
       - Modify health check config:
       ```
